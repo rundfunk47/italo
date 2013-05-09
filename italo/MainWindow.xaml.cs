@@ -30,6 +30,7 @@ namespace italo
         private static string _appName = "iTunes Automatic Library Organizer";
 
         private static System.Windows.Controls.Button _btnScan;
+        private static System.Windows.Controls.Button _btnDeadRefs;
         private static System.Windows.Controls.TextBox _txtLog;
         private static System.Windows.Controls.ProgressBar _pgsBar;
 
@@ -38,6 +39,7 @@ namespace italo
             InitializeComponent();   
 
             _btnScan = btnScan;
+            _btnDeadRefs = btnDeadRefs;
             _txtLog = txtLog;
             _pgsBar = pgsBar;
             _log = new Logger(_txtLog);
@@ -119,16 +121,59 @@ namespace italo
 
         internal static void ProgressBarUpdate(int val)
         {
-            System.Windows.Application.Current.Dispatcher.BeginInvoke(
-            DispatcherPriority.Normal,
-            (Action)(() => _pgsBar.Value = val));
+            try
+            {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                DispatcherPriority.Normal,
+                (Action)(() => _pgsBar.Value = val));
+            }
+            catch {}
+        }
+
+        internal static void DeadRefsDisable()
+        {
+            try
+            {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                DispatcherPriority.Normal,
+                (Action)(() => _btnDeadRefs.Content = "No dead references"));
+
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                DispatcherPriority.Normal,
+                (Action)(() => _btnDeadRefs.IsEnabled = false));
+            }
+            catch {}
+        }
+
+        internal static void DeadRefsUpdate(int number)
+        {
+            try
+            {
+                string s = "Remove " + number + " dead references...";
+
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                DispatcherPriority.Normal,
+                (Action)(() => _btnDeadRefs.Content = s));
+            }
+            catch {}
+        }
+
+        internal static void DeadRefsEnable()
+        {
+            try
+            {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                DispatcherPriority.Normal,
+                (Action)(() => _btnDeadRefs.IsEnabled = true));
+            }
+            catch {}
         }
 
         /*private*/
 
         private void ProgramExit()
         {
-            System.Windows.Application.Current.Shutdown();
+            App.Current.Shutdown();
         }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -148,6 +193,7 @@ namespace italo
         {
             if (System.Windows.MessageBox.Show("Are you sure you want to quit?", _appName, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
+                _notifyIcon.Visible = false;
                 this.ProgramExit();
             }
         }
@@ -201,6 +247,15 @@ namespace italo
         {
             Properties.Settings.Default.stngScanAtStartup = false;
             Properties.Settings.Default.Save();
+        }
+
+        private void BtnDeadRefs_Click(object sender, RoutedEventArgs e)
+        {
+            if (System.Windows.MessageBox.Show("Are you sure you want delete references to " + _libraryScanner.GetDeadRefsCount() + " files?", _appName, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                //FIXME: Thread? Progress? DO WE CARE?
+                _libraryScanner.DeleteDeadRefs();
+            }
         }
     }
 }

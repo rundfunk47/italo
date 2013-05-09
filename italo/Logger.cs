@@ -26,12 +26,19 @@ namespace italo
 
         private void Log(string msg)
         {
+            try
+            {
+                Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate()
+                {
 
-            Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate() {
-
-                _textLog.AppendText(System.String.Format("{0:G}: {1}.", System.DateTime.Now, msg) + Environment.NewLine);
-                _textLog.ScrollToEnd();
-            });
+                    _textLog.AppendText(System.String.Format("{0:G}: {1}.", System.DateTime.Now, msg) + Environment.NewLine);
+                    _textLog.ScrollToEnd();
+                });
+            }
+            catch
+            { 
+            
+            }
 
             /*
             System.IO.StreamWriter sw = System.IO.File.AppendText(GetTempPath() + _filename); ;

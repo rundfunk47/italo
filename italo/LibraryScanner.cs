@@ -17,11 +17,15 @@ namespace italo {
         private iTunesApp _library;
         private Logger _log;
         private IITTrackCollection _tracks;
+
         private int _trackCount;
+
         private List<string> _libraryLocations = new List<string>();
         private FileSystemWatcher _watcher;
         private Thread _scanThread = null;
+
         private Stack<string> _scanningDirectories = new Stack<string>();
+        private Stack<IITFileOrCDTrack> _deadRefs = new Stack<IITFileOrCDTrack>();
 
         HashSet<string> supportedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".mp3", ".wma", ".mp4", ".wav", ".aac", ".m4a" };
         private bool _scanLoopRunning = false;
@@ -97,6 +101,9 @@ namespace italo {
         private List<string> FileList()
         {
             List<string> list = new List<string>();
+            _deadRefs = new Stack<IITFileOrCDTrack>();
+
+            MainWindow.DeadRefsDisable();
 
             foreach (IITTrack currentTrack in _tracks)
             {
@@ -107,10 +114,11 @@ namespace italo {
                     if (currentFileTrack.Location == String.Empty || !System.IO.File.Exists(currentFileTrack.Location))
                     {
                         _log.LogInfo("Dead track found: " + currentFileTrack.Name);
-                        //list.Add(currentFileTrack.Location);
-                        //fileTrack.Delete();
+                        _deadRefs.Push(currentFileTrack);
+                        MainWindow.DeadRefsUpdate(_deadRefs.Count);
                     }
 
+                    //else?
                     if (currentFileTrack.Location != String.Empty)
                     {
                         _log.LogDebug("Adding " + currentFileTrack.Location + " to locationlist");
@@ -214,17 +222,22 @@ namespace italo {
         {
             _scanLoopRunning = false;
 
+            string msg;
+
             if (_addedDirs.Count == 1)
-            {
-                MainWindow.ShowNotify("Added folder " + _addedDirs[0] + " to iTunes");
-            }
+                msg = ("Added folder " + _addedDirs[0] + " to iTunes");
             else
+                msg = ("Added " + _addedDirs.Count() + " directories to iTunes");
+
+            if (_deadRefs.Count != 0)
             {
-                MainWindow.ShowNotify("Added " + _addedDirs.Count() + " directories to iTunes");
+                MainWindow.DeadRefsEnable();
+                msg = (msg + Environment.NewLine + "Also found " + _deadRefs.Count + " dead references");
             }
+            MainWindow.ShowNotify(msg);
 
             _log.LogInfo("Scan finished");
-            
+
             MainWindow.SetScanEnd();
             EndTasks();
         }
@@ -343,8 +356,25 @@ namespace italo {
             _library = new iTunesApp();
         }
 
-        public void StartScan(string directory, bool full, int sleep)
+        public int GetDeadRefsCount()
+        {
+            return _deadRefs.Count;
+        }
 
+        public void DeleteDeadRefs()
+        {
+            while (_deadRefs.Count != 0)
+            {
+                IITFileOrCDTrack referece = _deadRefs.Pop();
+
+                _log.LogInfo("Deleted " + referece.Name);
+                referece.Delete();
+            }
+
+            MainWindow.DeadRefsDisable();
+        }
+
+        public void StartScan(string directory, bool full, int sleep)
         {
             if (!Directory.Exists(directory))
             {
@@ -352,6 +382,8 @@ namespace italo {
             }
             else
             {
+                MainWindow.ShowNotify("Starting scan in " + directory);
+
                 _scanThread = new Thread(new ParameterizedThreadStart(this.FullScan));
                 string p1 = directory;
                 bool p2 = full;
