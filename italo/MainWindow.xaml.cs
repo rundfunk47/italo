@@ -40,17 +40,14 @@ namespace italo
             _btnScan = btnScan;
             _txtLog = txtLog;
             _pgsBar = pgsBar;
-
-            chkSilentAdd.IsChecked = Properties.Settings.Default.SilentAdd;
-
             _log = new Logger(_txtLog);
             _libraryScanner = new LibraryScanner(_log);
-
             _log.LogInfo("Starting program");
 
-            this.txtFolderPath.Text = Properties.Settings.Default.SearchPath;
-
-            //var asd = this.addWithoutNotify.IsChecked;
+            //Initialize from settings
+            chkSilentAdd.IsChecked = Properties.Settings.Default.stngSilentAdd;
+            chkScanAtStartup.IsChecked = Properties.Settings.Default.stngScanAtStartup;
+            txtScanPath.Text = Properties.Settings.Default.stngScanPath;
 
             #region notifyIcon
 
@@ -80,17 +77,21 @@ namespace italo
 
             #endregion
 
+            //Hide main window
             this.Hide();
 
-            if (Properties.Settings.Default.SearchPath == "")
+            if (Properties.Settings.Default.stngScanPath == "")
                 ShowNotify("Please set up a scan directory in order to use " + _appName);
             else
-                _libraryScanner.StartWatch(Properties.Settings.Default.SearchPath);
+                _libraryScanner.StartWatch(Properties.Settings.Default.stngScanPath);
+
+            if (Properties.Settings.Default.stngScanAtStartup == true && (!(Properties.Settings.Default.stngScanPath == "")))
+                _libraryScanner.StartScan(Properties.Settings.Default.stngScanPath, true, 0);
         }
 
         internal static void ShowNotify(string p)
         {
-            if (!Properties.Settings.Default.SilentAdd)
+            if (!Properties.Settings.Default.stngSilentAdd)
                 _notifyIcon.ShowBalloonTip(3000, _appName, p, ToolTipIcon.Info);
         }
 
@@ -157,36 +158,48 @@ namespace italo
         {
             var dialog = new System.Windows.Forms.FolderBrowserDialog();
             dialog.ShowDialog();
-            this.txtFolderPath.Text = dialog.SelectedPath;
+            this.txtScanPath.Text = dialog.SelectedPath;
 
-            if (Directory.Exists(txtFolderPath.Text))
+            if (Directory.Exists(txtScanPath.Text))
             {
-                Properties.Settings.Default.SearchPath = txtFolderPath.Text;
+                Properties.Settings.Default.stngScanPath = txtScanPath.Text;
                 Properties.Settings.Default.Save();
-                _libraryScanner.StartWatch(txtFolderPath.Text);
-                _log.LogDebug("Saved default path to " + txtFolderPath.Text);
+                _libraryScanner.StartWatch(txtScanPath.Text);
+                _log.LogDebug("Saved default path to " + txtScanPath.Text);
             }
             else
             {
                 System.Windows.MessageBox.Show("Search directory does not exist or is unaccessible");
-                txtFolderPath.Text = Properties.Settings.Default.SearchPath;
+                txtScanPath.Text = Properties.Settings.Default.stngScanPath;
             }
         }
 
         private void BtnScan_Click(object sender, RoutedEventArgs e)
         {
-            _libraryScanner.StartScan(Properties.Settings.Default.SearchPath, true, 0);
+            _libraryScanner.StartScan(Properties.Settings.Default.stngScanPath, true, 0);
         }
 
         private void ChkSilentAdd_Checked(object sender, RoutedEventArgs e)
         {
-            Properties.Settings.Default.SilentAdd = true;
+            Properties.Settings.Default.stngSilentAdd = true;
             Properties.Settings.Default.Save();
         }
 
         private void ChkSilentAdd_Unchecked(object sender, RoutedEventArgs e)
         {
-            Properties.Settings.Default.SilentAdd = false;
+            Properties.Settings.Default.stngSilentAdd = false;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ChkScanAtStartup_Checked(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.stngScanAtStartup = true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ChkScanAtStartup_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.stngScanAtStartup = false;
             Properties.Settings.Default.Save();
         }
     }

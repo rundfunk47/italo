@@ -26,24 +26,36 @@ namespace italo.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string SearchPath {
+        public string stngScanPath {
             get {
-                return ((string)(this["SearchPath"]));
+                return ((string)(this["stngScanPath"]));
             }
             set {
-                this["SearchPath"] = value;
+                this["stngScanPath"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool SilentAdd {
+        public bool stngSilentAdd {
             get {
-                return ((bool)(this["SilentAdd"]));
+                return ((bool)(this["stngSilentAdd"]));
             }
             set {
-                this["SilentAdd"] = value;
+                this["stngSilentAdd"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool stngScanAtStartup {
+            get {
+                return ((bool)(this["stngScanAtStartup"]));
+            }
+            set {
+                this["stngScanAtStartup"] = value;
             }
         }
     }

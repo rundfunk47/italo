@@ -369,7 +369,7 @@ namespace italo {
             //rewrite old watch
             _watcher = new FileSystemWatcher();
             _watcher.IncludeSubdirectories = true;
-            _watcher.Path = Properties.Settings.Default.SearchPath;
+            _watcher.Path = Properties.Settings.Default.stngScanPath;
             _watcher.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.DirectoryName | NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size;
 
             //add other watchers?

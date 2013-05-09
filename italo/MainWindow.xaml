@@ -6,11 +6,11 @@
     <Grid>
         <Button x:Name="btnScan" Content="Full scan now!" HorizontalAlignment="Left" Margin="12,397,0,0" VerticalAlignment="Top" Width="167" Height="26" Click="BtnScan_Click"/>
         <Label Content="Path to scan:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="txtFolderPath" HorizontalAlignment="Left" Height="23" Margin="92,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="258" RenderTransformOrigin="0.882,0.735" IsReadOnly="True"/>
+        <TextBox x:Name="txtScanPath" HorizontalAlignment="Left" Height="23" Margin="92,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="258" RenderTransformOrigin="0.882,0.735" IsReadOnly="True"/>
         <Button x:Name="btnBrowse" Content="Browse..." HorizontalAlignment="Left" Margin="369,13,0,0" VerticalAlignment="Top" Width="61" Click="BtnBrowse_Click" Height="23"/>
         <TextBox x:Name="txtLog" HorizontalAlignment="Left" Height="262" Margin="12,101,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="432" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible"/>
         <ProgressBar x:Name="pgsBar" HorizontalAlignment="Left" Height="24" Margin="12,368,0,0" VerticalAlignment="Top" Width="432"/>
         <CheckBox x:Name="chkSilentAdd" Content="Silent Add (no notifications)" HorizontalAlignment="Left" Margin="12,50,0,0" VerticalAlignment="Top" Checked="ChkSilentAdd_Checked" Unchecked="ChkSilentAdd_Unchecked"/>
-        <CheckBox x:Name="chkScanAtStartup" Content="Scan at Startup" HorizontalAlignment="Left" Margin="12,70,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="chkScanAtStartup" Content="Scan at Startup" HorizontalAlignment="Left" Margin="12,70,0,0" VerticalAlignment="Top" Checked="ChkScanAtStartup_Checked" Unchecked="ChkScanAtStartup_Unchecked"/>
     </Grid>
 </Window>

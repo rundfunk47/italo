@@ -2,10 +2,13 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="italo.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="SearchPath" Type="System.String" Scope="User">
+    <Setting Name="stngScanPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="SilentAdd" Type="System.Boolean" Scope="User">
+    <Setting Name="stngSilentAdd" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="stngScanAtStartup" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
