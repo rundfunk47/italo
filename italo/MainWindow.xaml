@@ -1,0 +1,15 @@
+﻿<Window x:Class="italo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="iTunes Automatic Library Organizer" Height="460.96" Width="461.747"
+        Icon="resources/icon.ico">
+    <Grid>
+        <Button x:Name="scanButton" Content="Full scan now!" HorizontalAlignment="Left" Margin="12,397,0,0" VerticalAlignment="Top" Width="90" Height="26" Click="Button_Click_1"/>
+        <Label Content="Path to scan:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="folderPathTextBox" HorizontalAlignment="Left" Height="23" Margin="92,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="258" RenderTransformOrigin="0.882,0.735" TextChanged="TextBox_TextChanged" IsReadOnly="True"/>
+        <Button x:Name="browseButton" Content="Browse..." HorizontalAlignment="Left" Margin="369,13,0,0" VerticalAlignment="Top" Width="61" Click="Button_Click" Height="23"/>
+        <TextBox x:Name="textLog" HorizontalAlignment="Left" Height="302" Margin="12,61,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="432" TextChanged="TextBox_TextChanged_1" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible"/>
+        <ProgressBar x:Name="progressBar" HorizontalAlignment="Left" Height="24" Margin="12,368,0,0" VerticalAlignment="Top" Width="432"/>
+        <CheckBox x:Name="addWithoutNotify" Content="Silent Add (no notifications)" HorizontalAlignment="Left" Margin="12,41,0,0" VerticalAlignment="Top" Checked="addWithoutNotify_Checked" Unchecked="addWithoutNotify_Unchecked"/>
+    </Grid>
+</Window>
