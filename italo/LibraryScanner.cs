@@ -22,6 +22,7 @@ namespace italo {
         private FileSystemWatcher _watcher;
         private Thread _scanThread = null;
         private Stack<string> _scanningDirectories = new Stack<string>();
+
         HashSet<string> supportedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".mp3", ".wma", ".mp4", ".wav", ".aac", ".m4a" };
         private bool _scanLoopRunning = false;
         private object _stackLock = new object();
@@ -39,6 +40,7 @@ namespace italo {
                 //Prevent re-adding, Isn't really a problem but nice...
                 _libraryLocations.Add(info.FullName);
                 var result = _library.LibraryPlaylist.AddFile(info.FullName);
+
             }
             else
             {
@@ -187,23 +189,24 @@ namespace italo {
 
         private int CountFiles(string directory)
         {
+            var fileCount = 0;
+
             try
             {
-                var fileCount = (from file in Directory.EnumerateFiles(directory, @"*", SearchOption.AllDirectories).Where(s => supportedExtensions.Contains(Path.GetExtension(s)))
+                fileCount = (from file in Directory.EnumerateFiles(directory, @"*", SearchOption.AllDirectories).Where(s => supportedExtensions.Contains(Path.GetExtension(s)))
                                  select file).Count();
 
                 return fileCount;
             }
             catch
             {
-                return 0;
+                return fileCount;
             }
         }
 
         private void SetScanStart()
         {
             _addedDirs = new List<string>();
-            MainWindow.SetScanStart();
         }
 
         private void SetScanEnd()
@@ -218,7 +221,9 @@ namespace italo {
             {
                 MainWindow.ShowNotify("Added " + _addedDirs.Count() + " directories to iTunes");
             }
+
             _log.LogInfo("Scan finished");
+            
             MainWindow.SetScanEnd();
             EndTasks();
         }
@@ -250,6 +255,7 @@ namespace italo {
             else
             {
                 _log.LogDebug("Starting partial scan in " + directory);
+
                 AddTasks(numFiles);
             }
 
@@ -338,6 +344,7 @@ namespace italo {
         }
 
         public void StartScan(string directory, bool full, int sleep)
+
         {
             if (!Directory.Exists(directory))
             {
@@ -351,6 +358,7 @@ namespace italo {
                 int p3 = sleep;
 
                 object[] parameters = new object[] { p1, p2, p3 };
+
                 _scanThread.Start(parameters);
             }
         }
