@@ -206,6 +206,7 @@ namespace italo {
 
         private void SetScanStart()
         {
+            MainWindow.SetScanStart();
             _addedDirs = new List<string>();
         }
 
@@ -278,7 +279,7 @@ namespace italo {
             else
                 path = Path.GetDirectoryName(e.FullPath);
 
-            MainWindow.SetScanStart();
+            SetScanStart();
 
             _log.LogDebug("Will rescan " + path + " due to: " + e.ChangeType);
             StartScan(path, false, 0);

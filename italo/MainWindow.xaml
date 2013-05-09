@@ -4,7 +4,7 @@
         Title="iTunes Automatic Library Organizer" Height="460.96" Width="461.747"
         Icon="resources/icon.ico">
     <Grid>
-        <Button x:Name="scanButton" Content="Full scan now!" HorizontalAlignment="Left" Margin="12,397,0,0" VerticalAlignment="Top" Width="90" Height="26" Click="Button_Click_1"/>
+        <Button x:Name="scanButton" Content="Full scan now!" HorizontalAlignment="Left" Margin="12,397,0,0" VerticalAlignment="Top" Width="167" Height="26" Click="Button_Click_1"/>
         <Label Content="Path to scan:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="folderPathTextBox" HorizontalAlignment="Left" Height="23" Margin="92,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="258" RenderTransformOrigin="0.882,0.735" TextChanged="TextBox_TextChanged" IsReadOnly="True"/>
         <Button x:Name="browseButton" Content="Browse..." HorizontalAlignment="Left" Margin="369,13,0,0" VerticalAlignment="Top" Width="61" Click="Button_Click" Height="23"/>
