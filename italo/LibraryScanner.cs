@@ -22,10 +22,11 @@ namespace italo {
         private FileSystemWatcher _watcher;
         private Thread _scanThread = null;
         private Stack<string> _scanningDirectories = new Stack<string>();
-        private int numberOfItemsAdded = 0;
-        HashSet<string> supportedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".mp3", ".wma", ".mp4", ".wav", ".aac" };
+        HashSet<string> supportedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".mp3", ".wma", ".mp4", ".wav", ".aac", ".m4a" };
         private bool _scanLoopRunning = false;
         private object _stackLock = new object();
+
+        private List<string> _addedDirs = new List<string>();
 
         private int _numTasks = 0;
         private int _finishedTasks = 0;
@@ -35,8 +36,9 @@ namespace italo {
             if (!FileExistsInLibrary(info))
             {
                 _log.LogInfo("Adding file " + info.FullName + " to iTunes Library");
+                //Prevent re-adding, Isn't really a problem but nice...
+                _libraryLocations.Add(info.FullName);
                 var result = _library.LibraryPlaylist.AddFile(info.FullName);
-                numberOfItemsAdded = numberOfItemsAdded + 1;
             }
             else
             {
@@ -150,26 +152,24 @@ namespace italo {
 
         private void AddScanDirectory(string topdirectory)
         {
-            var result = (from dir in Directory.EnumerateDirectories(topdirectory, @"*", SearchOption.AllDirectories)
-                             select dir);
-
-            object lockthis = new object();
-
-            _log.LogDebug("OUTSIDE LOCK: Trying to add directory: " + topdirectory);
-            lock (lockthis)
+            lock (_stackLock)
             {
-                _log.LogDebug("INSIDE LOCK: Adding directory: " + topdirectory);
+                if (AlreadyScheduledToScan(topdirectory))
+                    return;
+
                 _scanningDirectories.Push(topdirectory);
-            }
+                _addedDirs.Add(topdirectory);
 
-            foreach (var dir in result)
-            {
-                _log.LogDebug("OUTSIDE LOCK: Trying to add directory: " + dir);
+                var result = (from dir in Directory.EnumerateDirectories(topdirectory, @"*", SearchOption.AllDirectories)
+                              select dir);
 
-                lock (_stackLock)
+                foreach (var dir in result) 
                 {
-                    _log.LogDebug("INSIDE LOCK: Adding directory: " + dir);
-                    _scanningDirectories.Push(dir);
+                    if (AlreadyScheduledToScan(dir))
+                    {
+                        _scanningDirectories.Push(dir);
+                        _addedDirs.Add(dir);
+                    }
                 }
             }
 
@@ -187,14 +187,22 @@ namespace italo {
 
         private int CountFiles(string directory)
         {
-            var fileCount = (from file in Directory.EnumerateFiles(directory, @"*", SearchOption.AllDirectories).Where( s => supportedExtensions.Contains(Path.GetExtension(s)))
-                             select file).Count();
-                             
-            return fileCount;
+            try
+            {
+                var fileCount = (from file in Directory.EnumerateFiles(directory, @"*", SearchOption.AllDirectories).Where(s => supportedExtensions.Contains(Path.GetExtension(s)))
+                                 select file).Count();
+
+                return fileCount;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         private void SetScanStart()
         {
+            _addedDirs = new List<string>();
             MainWindow.SetScanStart();
         }
 
@@ -202,10 +210,15 @@ namespace italo {
         {
             _scanLoopRunning = false;
 
-            MainWindow.ShowNotify("Added " + numberOfItemsAdded + " songs to iTunes");
+            if (_addedDirs.Count == 1)
+            {
+                MainWindow.ShowNotify("Added folder " + _addedDirs[0] + " to iTunes");
+            }
+            else
+            {
+                MainWindow.ShowNotify("Added " + _addedDirs.Count() + " directories to iTunes");
+            }
             _log.LogInfo("Scan finished");
-            _log.LogInfo("Added " + numberOfItemsAdded + " songs to iTunes");
-            numberOfItemsAdded = 0;
             MainWindow.SetScanEnd();
             EndTasks();
         }
@@ -217,6 +230,10 @@ namespace italo {
             object[] parameterArray = (object[])parameters;
             string directory = (string)parameterArray[0];
             bool full = (bool)parameterArray[1];
+            int sleep = (int)parameterArray[2];
+
+            Thread.Sleep(sleep);
+
             int numFiles = CountFiles(directory);
 
             if (full == true)
@@ -232,7 +249,7 @@ namespace italo {
             }
             else
             {
-                _log.LogInfo("Starting partial scan in " + directory);
+                _log.LogDebug("Starting partial scan in " + directory);
                 AddTasks(numFiles);
             }
 
@@ -248,14 +265,18 @@ namespace italo {
 
         private void OnChanged(object source, FileSystemEventArgs e)
         {
+            string path;
+
+            if (Directory.Exists(e.FullPath))
+                path = e.FullPath;
+            else
+                path = Path.GetDirectoryName(e.FullPath);
+
             MainWindow.SetScanStart();
 
-            _log.LogInfo("File: " + e.FullPath + " " + e.ChangeType);
-
-            if (AlreadyScheduledToScan(e.FullPath))
-                _log.LogDebug("Will not scan " + e.FullPath + " since already scheduled");
-            else
-                StartScan(e.FullPath, false);
+            _log.LogDebug("Will rescan " + path + " due to: " + e.ChangeType);
+            //5 seconds is good?
+            StartScan(path, false, 0);
         }
 
         /*FIXME: THIS IS LAZY*/
@@ -316,7 +337,7 @@ namespace italo {
             _library = new iTunesApp();
         }
 
-        public void StartScan(string directory, bool full)
+        public void StartScan(string directory, bool full, int sleep)
         {
             if (!Directory.Exists(directory))
             {
@@ -327,7 +348,9 @@ namespace italo {
                 _scanThread = new Thread(new ParameterizedThreadStart(this.FullScan));
                 string p1 = directory;
                 bool p2 = full;
-                object[] parameters = new object[] { p1 , p2 };
+                int p3 = sleep;
+
+                object[] parameters = new object[] { p1, p2, p3 };
                 _scanThread.Start(parameters);
             }
         }
@@ -337,8 +360,9 @@ namespace italo {
             _log.LogInfo("Starting watch in " + directory);
             //rewrite old watch
             _watcher = new FileSystemWatcher();
+            _watcher.IncludeSubdirectories = true;
             _watcher.Path = Properties.Settings.Default.SearchPath;
-            _watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            _watcher.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.DirectoryName | NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size;
 
             //add other watchers?
             _watcher.Created += new FileSystemEventHandler(OnChanged);

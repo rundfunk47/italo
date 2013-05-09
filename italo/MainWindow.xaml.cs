@@ -144,7 +144,7 @@ namespace italo
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            _libraryScanner.StartScan(Properties.Settings.Default.SearchPath, true);
+            _libraryScanner.StartScan(Properties.Settings.Default.SearchPath, true, 0);
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
