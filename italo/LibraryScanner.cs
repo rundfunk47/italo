@@ -281,7 +281,6 @@ namespace italo {
             MainWindow.SetScanStart();
 
             _log.LogDebug("Will rescan " + path + " due to: " + e.ChangeType);
-            //5 seconds is good?
             StartScan(path, false, 0);
         }
 
